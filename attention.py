@@ -46,10 +46,14 @@ class MultiHeadAttention(nn.Module):
         self.attention_heads = [SelfAttention(self.model_dim, self.head_dim, seq_length, dropout_probability) for _ in range(num_of_heads)]
         self.W_o = nn.Linear(self.num_of_heads*self.head_dim, self.model_dim, bias=False)
         
+        self.dropout = nn.Dropout(p=dropout_probability)
+        
     def forward(self, input_embeddings):
         heads = [attn_head(input_embeddings) for attn_head in self.attention_heads]
         heads_concat = torch.cat(heads, dim=-1)
         attention_vectors = self.W_o(heads_concat)
+        
+        attention_vectors = self.dropout(attention_vectors)
         
         return attention_vectors
     
