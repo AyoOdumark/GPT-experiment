@@ -13,14 +13,7 @@ class miniGPT(nn.Module):
     def forward(self, input):
         embeds = self.embeddings(input)
         output = self.transformer_block(embeds)
-        output = self.transformer_block(embeds)
+        output = self.transformer_block(output)
         
         return output
     
-input_idx = torch.LongTensor([[1, 2, 3, 4], [5, 6, 7, 8]])
-
-gpt = miniGPT(10, 10, 4, 2, 0.1)
-output = gpt(input_idx)
-
-print(output.shape)
-
