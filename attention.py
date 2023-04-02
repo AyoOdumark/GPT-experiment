@@ -43,7 +43,8 @@ class MultiHeadAttention(nn.Module):
         self.head_dim = int(model_dim / num_of_heads)
         self.num_of_heads = num_of_heads
         
-        self.attention_heads = [SelfAttention(self.model_dim, self.head_dim, seq_length, dropout_probability) for _ in range(num_of_heads)]
+        self.attention_heads = nn.ModuleList(SelfAttention(self.model_dim, self.head_dim, seq_length, dropout_probability) 
+                                             for _ in range(num_of_heads))
         self.W_o = nn.Linear(self.num_of_heads*self.head_dim, self.model_dim, bias=False)
         
         self.dropout = nn.Dropout(p=dropout_probability)
