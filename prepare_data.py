@@ -1,5 +1,5 @@
 # 1. Implement Byte-pair encoding 
-# 2. Use OpenAI's tiktoken tokenizer. 
+
 from tokenizers import pre_tokenizers
 from tokenizers import Tokenizer
 from tokenizers.models import BPE
