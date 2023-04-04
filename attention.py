@@ -10,7 +10,7 @@ class SelfAttention(nn.Module):
         self.W_q = nn.Linear(model_dim, head_dim, bias=False)
         self.W_v = nn.Linear(model_dim, head_dim, bias=False)
         self.softmax = nn.Softmax(dim=-1)
-        # self.register_buffer("tril", torch.tril(torch.ones(seq_length, seq_length)))
+        self.register_buffer("tril", torch.tril(torch.ones(seq_length, seq_length)))
         
         self.attention_dropout = nn.Dropout(p=dropout_probability)
         
@@ -23,8 +23,8 @@ class SelfAttention(nn.Module):
         scores = torch.matmul(queries, keys.transpose(-2, -1)) /self.head_dim**0.5
         
         # Masking 
-        tril = torch.tril(torch.ones((scores.shape[-1], scores.shape[-1])))
-        scores = scores.masked_fill(tril==0, float("-inf"))
+        # tril = torch.tril(torch.ones((scores.shape[-1], scores.shape[-1])))
+        scores = scores.masked_fill(self.tril==0, float("-inf"))
         
         attention_weights = self.softmax(scores)
         
