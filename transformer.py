@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from attention import MultiHeadAttention
 
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
 class PositionWiseFeedForwardNet(nn.Module):
     def __init__(self, model_dim, width_factor=4, dropout_probability=0.1):
         super(PositionWiseFeedForwardNet, self).__init__()
@@ -30,7 +32,7 @@ class Embeddings(nn.Module):
         word_embeds = self.word_embeddings(input_idx)
         word_embeds = self.dropout(word_embeds)
         
-        pos_embeds = self.positional_embeddings(torch.arange(seq_len))
+        pos_embeds = self.positional_embeddings(torch.arange(seq_len).to(device))
         pos_embeds = self.dropout(pos_embeds)
         
         return word_embeds + pos_embeds
