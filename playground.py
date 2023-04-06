@@ -20,7 +20,7 @@ NUM_OF_HEADS = 12
 DROP_PROBABILITY = 0.1
 EPOCHS = 10
 LEARNING_RATE = 1e-4
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 CONTEXT_SIZE = 512
 
 gpt1 = GPT_1(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDING_DIM, num_of_layers=NUM_OF_LAYERS, 
@@ -79,7 +79,7 @@ for x, y in train_iter:
     
     y_pred = gpt1(x)
     
-    loss = criterion(y_pred, y)
+    loss = criterion(y_pred.view(-1, y_pred.size(-1)), y.view(-1))
     
     loss.backward()
     
