@@ -18,5 +18,5 @@ class GPT_1(nn.Module):
         for block in self.transformer:
             output = block(output)
         
-        return self.linear(output)
+        return nn.functional.log_softmax(self.linear(output), dim=-1)
     
