@@ -2,6 +2,7 @@
 # 2. Play around with the concept of dataloader and batch tokenization
 # 3. Run a sample train loop while configuring every part of the GPT experiment
 
+import wandb
 import torch 
 import torch.nn as nn
 # from torch.utils.data import DataLoader, Dataset
@@ -10,6 +11,11 @@ from prepare_data import load_tokenizer
 from gpt import GPT_1
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+# Weight and biases
+wandb.login()
+
+wandb.init(project="GPT1-exp")
 
 # Hyperparameters
 VOCAB_SIZE = 10000
@@ -87,13 +93,7 @@ for x, y in train_iter:
     
     print(f"Train loss: {loss.item()}")
     
+    wandb.log({"loss": loss.item()})
     
 
     
-
-
-        
-        
-
-    
-
