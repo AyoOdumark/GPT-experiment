@@ -36,6 +36,7 @@ LEARNING_RATE = 1e-5
 BATCH_SIZE = 16 # Original paper used 64. We are using 16 because we training on a single gpu
 CONTEXT_SIZE = 512
 NUM_ACCUMULATION_STEPS = 4 
+EVAL_ITER = 100
 
 gpt1 = GPT_1(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDING_DIM, num_of_layers=NUM_OF_LAYERS, 
             seq_length=SEQ_LENGTH, num_of_heads=NUM_OF_HEADS, dropout_probability=DROP_PROBABILITY).to(device)
@@ -51,9 +52,15 @@ train = prepare.get_train_data()
 test = prepare.get_test_data()
 
 train_token_ids = []
+test_token_ids = []
+
 for sentence in train:
     output = tokenizer.encode(sentence)
     train_token_ids += output.ids
+    
+for sentence in test:
+    output = tokenizer.encode(sentence)
+    test_token_ids += output.ids
     
 
 # output = gpt1(torch.LongTensor([train_token_ids[:512], train_token_ids[1:513]]))
@@ -78,8 +85,15 @@ class NaiveDataLoader:
             y = torch.LongTensor([self.data[i+1: i+1+self.context_size] for i in idx])
             
             yield X, y
-    
+            
+def evaluate(model, X_val, y_val, criterion):
+    with torch.no_grad():
+        y_pred = model(X_val)
+        val_loss = criterion(y_pred, y_val)
+        return val_loss
+        
 train_dataloader = NaiveDataLoader(train_token_ids, CONTEXT_SIZE, BATCH_SIZE)
+test_dataloader = NaiveDataLoader(test_token_ids, CONTEXT_SIZE, BATCH_SIZE)
 train_iter = iter(train_dataloader.get_batch())
 
 criterion = nn.NLLLoss()
@@ -108,6 +122,11 @@ for i, (x, y) in enumerate(train_iter):
         scaler.update()
         optimizer.zero_grad()
         
+    if i % EVAL_ITER == 0:
+        X_val, y_val = test_dataloader.get_batch()
+        val_loss = evaluate(gpt1, X_val, y_val, criterion=criterion)
+        print(f"Val loss: {val_loss.item()}")
+               
     print(f"Train loss: {loss.item()}")
         
     wandb.log({"loss": loss.item()})
