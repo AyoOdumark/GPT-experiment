@@ -32,7 +32,7 @@ SEQ_LENGTH = 512
 NUM_OF_HEADS = 12
 DROP_PROBABILITY = 0.1
 EPOCHS = 10
-LEARNING_RATE = 1e-5
+LEARNING_RATE = 1e-5 # you can use 1e-4 for smaller models
 BATCH_SIZE = 16 # Original paper used 64. We are using 16 because we training on a single gpu
 CONTEXT_SIZE = 512
 NUM_ACCUMULATION_STEPS = 4 
@@ -88,10 +88,13 @@ class NaiveDataLoader:
             
 def evaluate(model, X_val, y_val, criterion):
     with torch.no_grad():
-        y_pred = model(X_val)
-        val_loss = criterion(y_pred, y_val)
-        return val_loss
-        
+        X_val = X_val.to(device)
+        y_val = y_val.to(device)
+        with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=USE_AMP):
+            y_pred = model(X_val)
+            val_loss = criterion(y_pred.view(-1, y_pred.size(-1)), y_val.view(-1))
+            return val_loss
+            
 train_dataloader = NaiveDataLoader(train_token_ids, CONTEXT_SIZE, BATCH_SIZE)
 test_dataloader = NaiveDataLoader(test_token_ids, CONTEXT_SIZE, BATCH_SIZE)
 train_iter = iter(train_dataloader.get_batch())
@@ -123,7 +126,7 @@ for i, (x, y) in enumerate(train_iter):
         optimizer.zero_grad()
         
     if i % EVAL_ITER == 0:
-        X_val, y_val = test_dataloader.get_batch()
+        X_val, y_val = next(test_dataloader.get_batch())
         val_loss = evaluate(gpt1, X_val, y_val, criterion=criterion)
         print(f"Val loss: {val_loss.item()}")
                
