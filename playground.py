@@ -17,6 +17,7 @@ from prepare_data import load_tokenizer
 from gpt import GPT_1
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
+USE_AMP = True  # Use Gradient scaler and mixed precision
 
 # Weight and biases
 wandb.login()
@@ -84,32 +85,32 @@ train_iter = iter(train_dataloader.get_batch())
 criterion = nn.NLLLoss()
 optimizer = torch.optim.Adam(gpt1.parameters(), lr=LEARNING_RATE)
 
+# Adding GradScaler and Mixed precision
+scaler = torch.cuda.amp.GradScaler(enabled=USE_AMP)
+
 # Refactor this
-def train():
     
-    for i, (x, y) in enumerate(train_iter):
-        x = x.to(device)
-        y = y.to(device)
+for i, (x, y) in enumerate(train_iter):
+    x = x.to(device)
+    y = y.to(device)
         
+    with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=USE_AMP):
+        y_pred = gpt1(x) 
+        loss = criterion(y_pred.view(-1, y_pred.size(-1)), y.view(-1)) 
+        loss = loss / NUM_ACCUMULATION_STEPS
+    
+    # Accumulates scaled gradients
+    scaler.scale(loss).backward()
+        
+    if (i + 1) % NUM_ACCUMULATION_STEPS == 0:
+        # Update weights
+        scaler.step(optimizer)
+        scaler.update()
         optimizer.zero_grad()
         
-        y_pred = gpt1(x)
+    print(f"Train loss: {loss.item()}")
         
-        loss = criterion(y_pred.view(-1, y_pred.size(-1)), y.view(-1))
+    wandb.log({"loss": loss.item()})
         
-        loss = loss / NUM_ACCUMULATION_STEPS
-        loss.backward()
-        
-        if ((i + 1) % NUM_ACCUMULATION_STEPS == 0) or (i + 1 == len(train_iter)):
-            # Update weights
-            optimizer.step()
-        
-        print(f"Train loss: {loss.item()}")
-        
-        wandb.log({"loss": loss.item()})
-        
-
-if __name__ == "__main__":
-    train()
     
 
