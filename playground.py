@@ -33,7 +33,7 @@ NUM_OF_HEADS = 12
 DROP_PROBABILITY = 0.1
 EPOCHS = 10
 LEARNING_RATE = 1e-5
-BATCH_SIZE = 64
+BATCH_SIZE = 16 # Original paper used 64. We are using 16 because we training on a single gpu
 CONTEXT_SIZE = 512
 NUM_ACCUMULATION_STEPS = 4 
 
