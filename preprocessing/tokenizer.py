@@ -7,19 +7,21 @@ from tokenizers.normalizers import Lowercase
 from time import sleep
 from typing import List
 
-class Tokenizer:
+class BytePairTokenizer:
     def __init__(self, vocab_size: int, special_tokens="[UNK]") -> None:
         self.normalizer = Lowercase()
         self.pre_tokenizer = pre_tokenizers.Sequence([Whitespace(), Digits(), Punctuation()])
         self.tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
-        self.trainer = BpeTrainer(vocab_size=vocab_size, show_progress=True, special_tokens=special_tokens)
+        self.trainer = BpeTrainer(vocab_size=vocab_size, show_progress=True, special_tokens=[special_tokens])
         self.tokenizer.normalizer = self.normalizer
         self.tokenizer.pre_tokenizer = self.pre_tokenizer
         
-    def train(self, corpus: List[str]) -> None:
+    def train(self, corpus: List[str], save_to: str) -> None:
+        print("Training tokenizer...")
         self.tokenizer.train_from_iterator(iterator=corpus, trainer=self.trainer, length=len(corpus))
+        print("Training complete.")
         print("Saving tokenizer as tokenizer.json...")
-        self.tokenizer.save("tokenizer.json")
+        self.tokenizer.save(save_to)
         sleep(2)
         print("Tokenizer saved successfully!")
         
