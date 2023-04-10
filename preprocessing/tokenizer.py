@@ -25,7 +25,7 @@ class BytePairTokenizer:
         sleep(2)
         print("Tokenizer saved successfully!")
         
-    def load(self, path: str):
-        return Tokenizer.from_file(path)
+def load(path: str):
+    return Tokenizer.from_file(path)
         
 
