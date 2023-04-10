@@ -22,8 +22,8 @@ def split_dataset(dataset: List[str], train_size: float):
     test = []
     dataset_length = len(dataset)
     train_idx = int(dataset_length * train_size)
-    train_data = train_data + dataset[0:train_idx]
-    test_data = test_data + dataset[train_idx + 1:]
+    train = train + dataset[0:train_idx]
+    test = test + dataset[train_idx + 1:]
     
     return train, test
     
