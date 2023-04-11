@@ -69,10 +69,10 @@ def main(opt):
     corpus = preprocessing.read_file(opt.corpus_path)
     
     train, test = preprocessing.split_dataset(corpus, train_size=0.8)
-    tokenizer = tokenizer.load_tokenizer(opt.tokenizer)
+    bpe_tokenizer = load_tokenizer(opt.tokenizer)
     
-    train_token_ids = preprocessing.tokenize_and_encode(train, tokenizer)
-    test_token_ids = preprocessing.tokenizer_and_encode(test, tokenizer)
+    train_token_ids = preprocessing.tokenize_and_encode(train, bpe_tokenizer)
+    test_token_ids = preprocessing.tokenizer_and_encode(test, bpe_tokenizer)
     
     train_dataset = CorpusDataset(train_token_ids, opt.context_size)
     test_dataset = CorpusDataset(test_token_ids, opt.context_size)
