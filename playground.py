@@ -72,7 +72,7 @@ def main(opt):
     bpe_tokenizer = load_tokenizer(opt.tokenizer)
     
     train_token_ids = preprocessing.tokenize_and_encode(train, bpe_tokenizer)
-    test_token_ids = preprocessing.tokenizer_and_encode(test, bpe_tokenizer)
+    test_token_ids = preprocessing.tokenize_and_encode(test, bpe_tokenizer)
     
     train_dataset = CorpusDataset(train_token_ids, opt.context_size)
     test_dataset = CorpusDataset(test_token_ids, opt.context_size)
