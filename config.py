@@ -15,7 +15,7 @@ class ConfigBase:
         self.parser.add_argument("--vocab_size", type=int, default=10000, 
                             help="Vocabulary size. Vocabulary is created with byte-level byte pair encoding")
         self.parser.add_argument("--learning_rate", type=float, default=1e-5, help="starting learning rate")
-        self.parser.add_argument("--Embedding_dim", type=int, default=768, 
+        self.parser.add_argument("--embedding_dim", type=int, default=768, 
                             help="Embedding dimension. Make sure this argument is a multiple of attention heads")
         self.parser.add_argument("--num_of_layers", type=int, default=12, help="Number of transformer blocks")
         self.parser.add_argument("--num_of_heads", type=int, default=12, 
