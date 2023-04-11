@@ -2,6 +2,9 @@
 # 2. Play around with the concept of dataloader and batch tokenization
 # 3. Run a sample train loop while configuring every part of the GPT experiment
 
+# NOTE:
+# 1. There is still a bug when using the pytorch dataloader. So I am using the NaiveDataLoader for now till I fix the bug
+
 # TODO
 # 1. Create a learning rate scheduler. Use AdamW optimizer instead of Adam
 # 2. Write evaluation and generation function to see output of model
@@ -31,8 +34,8 @@ class CorpusDataset(Dataset):
         return self.n_data
     
     def __getitem__(self, idx):
-        X = torch.LongTensor([self.data[idx: idx + self.context_size]])
-        y = torch.LongTensor([self.data[idx + 1: idx + 1 + self.context_size]])
+        X = torch.LongTensor(self.data[idx: idx + self.context_size])
+        y = torch.LongTensor(self.data[idx + 1: idx + 1 + self.context_size])
         
         return X, y
 
@@ -65,7 +68,7 @@ def evaluate(model, X_val, y_val, criterion):
             return val_loss
     
 def main(opt):
-    gpt = GPT_1(opt.vocab_size, opt.embedding_dim, opt.num_of_layers, opt.context_size, opt.num_of_heads, opt.dropout_proba)
+    gpt = GPT_1(opt.vocab_size, opt.embedding_dim, opt.num_of_layers, opt.context_size, opt.num_of_heads, opt.dropout_proba).to(device)
     corpus = preprocessing.read_file(opt.corpus_path)
     
     train, test = preprocessing.split_dataset(corpus, train_size=0.8)
@@ -74,11 +77,13 @@ def main(opt):
     train_token_ids = preprocessing.tokenize_and_encode(train, bpe_tokenizer)
     test_token_ids = preprocessing.tokenize_and_encode(test, bpe_tokenizer)
     
-    train_dataset = CorpusDataset(train_token_ids, opt.context_size)
-    test_dataset = CorpusDataset(test_token_ids, opt.context_size)
+    # train_dataset = CorpusDataset(train_token_ids, opt.context_size)
+    # test_dataset = CorpusDataset(test_token_ids, opt.context_size)
     
-    train_dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, pin_memory=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, pin_memory=True)
+    train_dataloader = NaiveDataLoader(train_token_ids, context_size=opt.context_size, batch_size=opt.batch_size)
+    test_dataloader = NaiveDataLoader(test_token_ids, context_size=opt.context_size, batch_size=opt.batch_size)
+    
+    train_iter = iter(train_dataloader.get_batch())
     
     criterion = nn.NLLLoss()
     optimizer = torch.optim.Adam(gpt.parameters(), lr=opt.learning_rate)
@@ -88,9 +93,9 @@ def main(opt):
 
     # Refactor this
     
-    for i, (x, y) in enumerate(train_dataloader):
-        x = x.to(device, non_blocking=True)
-        y = y.to(device, non_blocking=True)
+    for i, (x, y) in enumerate(train_iter):
+        x = x.to(device)
+        y = y.to(device)
         
         with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=USE_AMP):
             y_pred = gpt(x) 
@@ -107,14 +112,15 @@ def main(opt):
             optimizer.zero_grad()
         
         # Evaluation
-        X_val, y_val = next(iter(test_dataloader))
-        X_val = X_val.to(device, non_blocking=True)
-        y_val = y_val.to(device, non_blocking=True)
+        X_val, y_val = next(test_dataloader.get_batch())
+        X_val = X_val.to(device)
+        y_val = y_val.to(device)
         val_loss = evaluate(gpt, X_val, y_val, criterion=criterion)
                 
         print(f"Train loss: {loss.item()}      Val loss: {val_loss.item()}")
             
-        wandb.log({"loss": loss.item()})
+        wandb.log({"Train loss": loss.item()})
+        wandb.log({"Val loss": val_loss.item()})
 
 if __name__ == "__main__":
     opt = Config().parse()
