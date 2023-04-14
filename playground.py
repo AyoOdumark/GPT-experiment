@@ -112,12 +112,25 @@ def main(opt):
             optimizer.zero_grad()
         
         # Evaluation
-        X_val, y_val = next(test_dataloader.get_batch())
-        X_val = X_val.to(device)
-        y_val = y_val.to(device)
-        val_loss = evaluate(gpt, X_val, y_val, criterion=criterion)
-                
-        print(f"Train loss: {loss.item()}      Val loss: {val_loss.item()}")
+        if i % opt.epochs_log == 0:
+            gpt.eval()
+            X_val, y_val = next(test_dataloader.get_batch())
+            X_val = X_val.to(device)
+            y_val = y_val.to(device)
+            val_loss = evaluate(gpt, X_val, y_val, criterion=criterion)
+            print(f"At epoch {i}, Train loss: {loss.item()}      Val loss: {val_loss.item()}")
+            print(f"Saving model checkout at epoch {i}...")
+            
+            torch.save({
+                "epoch": i,
+                "model_state_dict": gpt.state_dict(),
+                "Optimizer_state_dict": optimizer.state_dict(),
+                "loss": loss
+            }, "model_checkpoint.tar")
+            print("Model checkpoint saved as model_checkpoint.tar")
+            
+            gpt.train()
+        print(f"Train loss: {loss.item()}")
             
         wandb.log({"Train loss": loss.item()})
         wandb.log({"Val loss": val_loss.item()})

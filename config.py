@@ -21,6 +21,8 @@ class ConfigBase:
         self.parser.add_argument("--num_of_heads", type=int, default=12, 
                             help="Number of attention heads. Make sure this argument is a divisor of Embedding dimension")
         self.parser.add_argument("--epochs", type=int, default=10, help="Number of epochs")
+        self.parser.add_argument("--epochs_log", type=int, default=500, 
+                                 help="Logging routine. Epochs_log tells the program to log every epochs_log")
         self.parser.add_argument("--batch_size", type=int, default=16, help="Batch size")
         self.parser.add_argument("--context_size", type=int, default=512, help="Size of context")
         self.parser.add_argument("--num_accumulation_steps", type=int, default=4, help="Gradient Accumulation steps")
