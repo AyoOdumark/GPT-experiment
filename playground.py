@@ -20,6 +20,7 @@ from preprocessing import preprocessing
 from preprocessing.tokenizer import load_tokenizer
 from gpt import GPT_1
 from config import Config
+from learning_schedule import GPTLearningRateScheduler
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 USE_AMP = True  # Use Gradient scaler and mixed precision
@@ -85,13 +86,18 @@ def main(opt):
     
     train_iter = iter(train_dataloader.get_batch())
     
+    max_iters = int(len(train_token_ids)/opt.batch_size)
+    
+    # Used the parameters as stated in GPT-1 paper
+    lr_scheduler = GPTLearningRateScheduler(max_lr=2.4e-4, min_lr=0.0, warm_up_iters=2000, max_iters=max_iters)
+    learning_rate = lr_scheduler.get_lr(0)
+    
     criterion = nn.NLLLoss()
-    optimizer = torch.optim.Adam(gpt.parameters(), lr=opt.learning_rate)
+    optimizer = torch.optim.Adam(gpt.parameters(), lr=learning_rate)
 
     # Adding GradScaler and Mixed precision
     scaler = torch.cuda.amp.GradScaler(enabled=USE_AMP)
 
-    # Refactor this
     
     for i, (x, y) in enumerate(train_iter):
         x = x.to(device)
@@ -110,6 +116,9 @@ def main(opt):
             scaler.step(optimizer)
             scaler.update()
             optimizer.zero_grad()
+            
+        for params in optimizer.param_groups:
+            params["lr"] = lr_scheduler.get_lr(current_iter=i)
         
         # Evaluation
         if i % opt.epochs_log == 0:
