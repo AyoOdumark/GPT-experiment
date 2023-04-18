@@ -16,16 +16,30 @@ class BytePairTokenizer:
         self.tokenizer.normalizer = self.normalizer
         self.tokenizer.pre_tokenizer = self.pre_tokenizer
         
-    def train(self, corpus: List[str], save_to: str) -> None:
+    def train(self, file_path: str, save_to: str) -> None:
         print("Training tokenizer...")
-        self.tokenizer.train_from_iterator(iterator=corpus, trainer=self.trainer, length=len(corpus))
+        self.tokenizer.train_from_iterator(files=[file_path], trainer=self.trainer)
         print("Training complete.")
-        print("Saving tokenizer as tokenizer.json...")
+        print(f"Saving tokenizer as {save_to}...")
+        self.tokenizer.save(save_to)
+        sleep(2)
+        print("Tokenizer saved successfully!")
+        
+class BBPETokenizer:
+    def __init__(self, vocab_size: int, special_tokens=["<|endoftext|>"]):
+        self.tokenizer = Tokenizer(BPE())
+        self.trainer = BpeTrainer(vocab_size=vocab_size, special_tokens=special_tokens)
+        self.tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
+        
+    def train(self, file_path: str, save_to: str) -> None:
+        print("Training tokenizer...")
+        self.tokenizer.train([file_path], trainer=self.trainer)
+        print("Training complete.")
+        print(f"Saving tokenizer as {save_to}...")
         self.tokenizer.save(save_to)
         sleep(2)
         print("Tokenizer saved successfully!")
         
 def load_tokenizer(path: str):
     return Tokenizer.from_file(path)
-        
 
