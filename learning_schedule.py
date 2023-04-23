@@ -25,8 +25,6 @@ class GPTLearningRateScheduler:
         return self.cosine_annealing(current_iter)
     
 
-scheduler = GPTLearningRateScheduler(2.4e-4, 0.0, 2000, 600000)
-
     
         
         
