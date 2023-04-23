@@ -18,7 +18,7 @@ class BytePairTokenizer:
         
     def train(self, file_path: str, save_to: str) -> None:
         print("Training tokenizer...")
-        self.tokenizer.train_from_iterator(files=[file_path], trainer=self.trainer)
+        self.tokenizer.train(files=[file_path], trainer=self.trainer)
         print("Training complete.")
         print(f"Saving tokenizer as {save_to}...")
         self.tokenizer.save(save_to)
