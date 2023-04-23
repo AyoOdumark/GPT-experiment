@@ -12,12 +12,9 @@ parser.add_argument("--out", type=str, default="tokenizer.json", help="output pa
 
 opt = parser.parse_args()
 
-# Read the file
-corpus = read_file(opt.corpus_path)
-
 # Create tokenizer
 tokenizer = BytePairTokenizer(opt.vocab_size)
 
 # Train tokenizer and save as tokenizer.json
-tokenizer.train(corpus, opt.out)
+tokenizer.train(opt.corpus_path, opt.out)
 
