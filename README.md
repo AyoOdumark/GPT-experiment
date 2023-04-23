@@ -70,8 +70,8 @@ Baseline reporting will be here!
 
 ## Acknowledgments
 
-I want to thank about team at [rectlabs](https://rectlabs.com).
+I want to thank the team at [rectlabs](https://rectlabs.com).
 
 ## Collaborations
 
-Feel free to reach out at [mail](ayomide@rectlabs.com). Looking for collaborators in Africa to work with. 
+Feel free to reach out at ayomide@rectlabs.com. Looking for collaborators in Africa to work with. 
