@@ -67,11 +67,6 @@ Baseline reporting will be here!
 - Train model on a cluster
 - Investigation other initialization. Currently, I use the default pytorch init, and not the init scheme given in the paper.
 
-
-## Acknowledgments
-
-I want to thank the team at [rectlabs](https://rectlabs.com).
-
 ## Collaborations
 
-Feel free to reach out at ayomide@rectlabs.com. Looking for collaborators in Africa to work with. 
+Feel free to reach out at chemathphy@gmail.com. Looking for collaborators in Africa to work with. 
